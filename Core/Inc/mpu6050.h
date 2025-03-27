@@ -27,6 +27,14 @@ enum dataRegisters
 
 };
 
+enum interruptStates
+{
+	readData,
+	control_X_Axis,
+	control_Y_Axis,
+	control_Z_Axis
+};
+
 #define DEVICE_ADRESS 0b1101000 //when AD0 is low on MPU6050
 #define DLPF_VALUE 0b0 //Value of the Digital Low Pass Filter -> see Table in datasheet section 4.3 Configuration
 

@@ -139,71 +139,56 @@ int main(void)
 	{
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2);
 
-		mpu6050_readData();
-
 		timeSaveBlink = HAL_GetTick();
 	}
 
-	static uint8_t PWMspeed = 1;
-	static uint32_t timeSaveMotorTest = HAL_GetTick();
+	static uint8_t PWMspeed = 0;
+	static uint32_t timeSaveMotorTest = 0;
 	if(HAL_GetTick() - timeSaveMotorTest >= 10000)
 	{
-		uint8_t newARR;
+		uint32_t newDuty;
 		switch(PWMspeed)
 		{
 			case 0:
-				newARR = 100-1;
-				if(TIM3->CNT > newARR)
-				{
-					__HAL_TIM_SET_COUNTER(&htim3, 0);
-				}
-
-				TIM3->ARR = newARR;
-				TIM3->CCR1 = (newARR/2);
-
+				newDuty = (htim3.Instance->ARR + 1) / 2; //50% Duty
+				htim3.Instance->CCR1 = newDuty;
 				PWMspeed++;
 			break;
 
 			case 1:
-				newARR = 90-1;
-				if(TIM3->CNT > newARR)
-				{
-					__HAL_TIM_SET_COUNTER(&htim3, 0);
-				}
-
-				TIM3->ARR = newARR;
-				TIM3->CCR1 = (newARR/2);
-
+				newDuty = (htim3.Instance->ARR + 1) / 4; //25% Duty => 75% Geschwindigkeit
+				htim3.Instance->CCR1 = newDuty;
 				PWMspeed++;
 			break;
 
 			case 2:
-				newARR = 200-1;
-				if(TIM3->CNT > newARR)
-				{
-					__HAL_TIM_SET_COUNTER(&htim3, 0);
-				}
-
-				TIM3->ARR = newARR;
-				TIM3->CCR1 = (newARR/2);
-
+				newDuty = ((htim3.Instance->ARR + 1) / 2) + ((htim3.Instance->ARR + 1) / 4); //75% Duty => 25% Geschwindigkeit
+				htim3.Instance->CCR1 = newDuty;
 				PWMspeed = 0;
 			break;
 		}
+		timeSaveMotorTest = HAL_GetTick();
 	}
 
 	if (receivedStart_Flag)
 	{
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+	    static uint32_t timeSaveBuzzer = 0;
+	    static bool buzzerActive = false;
 
-		static uint32_t timeSaveBuzzer = HAL_GetTick();
-		if (HAL_GetTick() - timeSaveBuzzer >= 500) // 500 ms delay
-		{
-			printf("Start \n");
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET); //turn off buzzer again
-			timeSaveBuzzer = HAL_GetTick();
-			receivedStart_Flag = false; //Reset the Start Flag
-		}
+	    if (!buzzerActive)  // If the buzzer is not already on, start it
+	    {
+	        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); // Turn on buzzer
+	        timeSaveBuzzer = HAL_GetTick(); // Save the current time
+	        buzzerActive = true;
+	    }
+
+	    if (buzzerActive && (HAL_GetTick() - timeSaveBuzzer >= 500)) // 500 ms delay
+	    {
+	        printf("Start \n");
+	        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET); // Turn off buzzer
+	        buzzerActive = false;  // Reset buzzer state
+	        receivedStart_Flag = false; // Reset the Start Flag
+	    }
 	}
 
 	/*

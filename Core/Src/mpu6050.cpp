@@ -108,79 +108,90 @@ void mpu6050_init(bool interruptEnable)
 
 }
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	static uint8_t interruptState = readData;
+    if (htim->Instance == TIM4)  // Check if the interrupt comes from TIM4
+    {
+        switch(interruptState)
+        {
+        	case readData:
+        		mpu6050_readData();
+        		interruptState++;
+        	break;
+
+        	case control_X_Axis:
+				interruptState++;
+			break;
+
+        	case control_Y_Axis:
+				interruptState++;
+			break;
+
+        	case control_Z_Axis:
+				interruptState = readData;
+			break;
+
+        }
+    }
+}
+
 void mpu6050_readData()
 {
 	if (HAL_I2C_GetState(&hi2c1) == HAL_I2C_STATE_READY)
 	{
-		HAL_I2C_Mem_Read_IT(&hi2c1, ((DEVICE_ADRESS) <<1) + 1, 59, 1, dataMPU, 14);
+		HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(&hi2c1, ((DEVICE_ADRESS) <<1) + 1, 59, 1, dataMPU, 14, 100);
+
+		if(ret == HAL_OK)
+		{
+			double accX, accY, accZ, gyroX, gyroY, gyroZ, elapsedTime, accRoll, accPitch;
+			static double gyroAngleX = 0.0, gyroAngleY = 0.0, gyroYaw = 0.0;
+			static uint32_t currentTime, previousTime;
+
+			//Accelerometer Data (Registers 59 to 64)
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+			accX = ((int16_t)((dataMPU[ACCEL_XOUT_H] << 8) | dataMPU[ACCEL_XOUT_L]))/16384.0;
+			//printf("Accel-X [g]: %f \n", accX);
+
+			accY = ((int16_t)((dataMPU[ACCEL_YOUT_H] << 8) | dataMPU[ACCEL_YOUT_L]))/16384.0;
+			//printf("Accel-Y [g]: %f \n", accY);
+
+			accZ = ((int16_t)((dataMPU[ACCEL_ZOUT_H] << 8) | dataMPU[ACCEL_ZOUT_L]))/16384.0;
+			//printf("Accel-Z [g]: %f \n", accZ);
+
+			//Roll and Pitch Angles from Accelerometer
+			accPitch = atan2(-accX, sqrt(accY * accY + accZ * accZ)) * 57.2958; //* 57.2958 conversion from rad to deg (180°/PI)
+			//printf("Pitch: %f \n", accPitch);
+			/*works only if sensor is level (small pitch)
+			accRoll = atan2(accY, accZ) * 57.3;
+			printf("Roll1: %f \n", accRoll);
+			*/
+			accRoll = atan2(accY, sqrt(accX * accX + accZ * accZ)) * 57.2958; //* 57.2958 conversion from rad to deg (180°/PI)
+			//printf("Roll: %f \n", accRoll);
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+			//Temperature Data (Registers 65 and 66)
+
+			//Gyroscope Data (Registers 67 to 72)
+			currentTime = HAL_GetTick();
+			elapsedTime = (currentTime - previousTime) / 1000.0; // divided by 1000 for conversion between milliseconds and seconds
+
+			gyroX = ((int16_t)((dataMPU[GYRO_XOUT_H] << 8) | dataMPU[GYRO_XOUT_L]))/131.0;
+			printf("Gyro-X [°/s]: %f \n", gyroX);
+
+			gyroY = ((int16_t)((dataMPU[GYRO_YOUT_H] << 8) | dataMPU[GYRO_YOUT_L]))/131.0;
+			printf("Gyro-Y [°/s]: %f \n", gyroY);
+
+			gyroZ = ((int16_t)((dataMPU[GYRO_ZOUT_H] << 8) | dataMPU[GYRO_ZOUT_L]))/131.0;
+			printf("Gyro-Z [°/s]: %f \n", gyroZ);
+
+			//Angles and yaw from Gyroscope
+			gyroAngleX += gyroX * elapsedTime;
+			gyroAngleY += gyroY * elapsedTime;
+			gyroYaw += gyroZ * elapsedTime;
+
+			previousTime = currentTime;
+		}
 	}
-}
-
-void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
-{
-	// This is called when the I2C memory read operation completes
-	if (hi2c->Instance == I2C1)
-	{
-		double accX, accY, accZ, gyroX, gyroY, gyroZ, elapsedTime, accRoll, accPitch;
-		static double gyroAngleX = 0.0, gyroAngleY = 0.0, gyroYaw = 0.0;
-		static uint32_t currentTime, previousTime;
-
-		//Accelerometer Data (Registers 59 to 64)
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-		accX = ((int16_t)((dataMPU[ACCEL_XOUT_H] << 8) | dataMPU[ACCEL_XOUT_L]))/16384.0;
-		//printf("Accel-X [g]: %f \n", accX);
-
-		accY = ((int16_t)((dataMPU[ACCEL_YOUT_H] << 8) | dataMPU[ACCEL_YOUT_L]))/16384.0;
-		//printf("Accel-Y [g]: %f \n", accY);
-
-		accZ = ((int16_t)((dataMPU[ACCEL_ZOUT_H] << 8) | dataMPU[ACCEL_ZOUT_L]))/16384.0;
-		//printf("Accel-Z [g]: %f \n", accZ);
-
-		//Roll and Pitch Angles from Accelerometer
-		accPitch = atan2(-accX, sqrt(accY * accY + accZ * accZ)) * 57.2958; //* 57.2958 conversion from rad to deg (180°/PI)
-		//printf("Pitch: %f \n", accPitch);
-		/*works only if sensor is level (small pitch)
-		accRoll = atan2(accY, accZ) * 57.3;
-		printf("Roll1: %f \n", accRoll);
-		*/
-		accRoll = atan2(accY, sqrt(accX * accX + accZ * accZ)) * 57.2958; //* 57.2958 conversion from rad to deg (180°/PI)
-		//printf("Roll: %f \n", accRoll);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-		//Temperature Data (Registers 65 and 66)
-
-		//Gyroscope Data (Registers 67 to 72)
-		currentTime = HAL_GetTick();
-		elapsedTime = (currentTime - previousTime) / 1000.0; // divided by 1000 for conversion between milliseconds and seconds
-
-		gyroX = ((int16_t)((dataMPU[GYRO_XOUT_H] << 8) | dataMPU[GYRO_XOUT_L]))/131.0;
-		printf("Gyro-X [°/s]: %f \n", gyroX);
-
-		gyroY = ((int16_t)((dataMPU[GYRO_YOUT_H] << 8) | dataMPU[GYRO_YOUT_L]))/131.0;
-		printf("Gyro-Y [°/s]: %f \n", gyroY);
-
-		gyroZ = ((int16_t)((dataMPU[GYRO_ZOUT_H] << 8) | dataMPU[GYRO_ZOUT_L]))/131.0;
-		printf("Gyro-Z [°/s]: %f \n", gyroZ);
-
-		//Angles and yaw from Gyroscope
-		gyroAngleX += gyroX * elapsedTime;
-		gyroAngleY += gyroY * elapsedTime;
-		gyroYaw += gyroZ * elapsedTime;
-
-		previousTime = currentTime;
-	}
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	static uint8_t calcCounter = 0;
-    if (htim->Instance == TIM4)  // Check if the interrupt comes from TIM3
-    {
-        switch(calcCounter)
-        {
-        	case 0:
-        	break;
-        }
-    }
 }
 
 //Code for reading the Sensor Data with the Interrupt Pin
@@ -196,7 +207,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		//read the data via I2C if ready
 		if (HAL_I2C_GetState(&hi2c1) == HAL_I2C_STATE_READY)
 		{
-			HAL_I2C_Mem_Read_IT(&hi2c1, ((DEVICE_ADRESS) <<1) + 1, 59, 1, dataMPU, 14);
+			mpu6050_readData();
 		}
 	}
 }

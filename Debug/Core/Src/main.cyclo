@@ -1,11 +1,11 @@
 ../Drivers/CMSIS/Include/core_cm4.h:2064:26:uint32_t ITM_SendChar(uint32_t)	5
-../Core/Src/main.cpp:79:5:int main()	18
-../Core/Src/main.cpp:243:6:void SystemClock_Config()	3
-../Core/Src/main.cpp:289:13:void MX_I2C1_Init()	2
-../Core/Src/main.cpp:323:13:void MX_TIM3_Init()	6
-../Core/Src/main.cpp:382:13:void MX_TIM4_Init()	4
-../Core/Src/main.cpp:427:13:void MX_USART2_UART_Init()	2
-../Core/Src/main.cpp:458:13:void MX_DMA_Init()	1
-../Core/Src/main.cpp:476:13:void MX_GPIO_Init()	1
-../Core/Src/main.cpp:532:6:int _write(int, char*, int)	2
-../Core/Src/main.cpp:551:6:void Error_Handler()	1
+../Core/Src/main.cpp:79:5:int main()	14
+../Core/Src/main.cpp:228:6:void SystemClock_Config()	3
+../Core/Src/main.cpp:274:13:void MX_I2C1_Init()	2
+../Core/Src/main.cpp:308:13:void MX_TIM3_Init()	6
+../Core/Src/main.cpp:367:13:void MX_TIM4_Init()	4
+../Core/Src/main.cpp:412:13:void MX_USART2_UART_Init()	2
+../Core/Src/main.cpp:443:13:void MX_DMA_Init()	1
+../Core/Src/main.cpp:461:13:void MX_GPIO_Init()	1
+../Core/Src/main.cpp:517:6:int _write(int, char*, int)	2
+../Core/Src/main.cpp:536:6:void Error_Handler()	1
