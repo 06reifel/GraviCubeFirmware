@@ -12,8 +12,14 @@
 #include "main.h"
 
 extern UART_HandleTypeDef huart2;
-extern bool receivedStart_Flag;
+extern bool receivedStart_Flag_1D;
 uint8_t receivedBTData;
+
+/*
+ **********************************
+ **		  BT-MODULE INIT	     **
+ **********************************
+*/
 
 void hc05_init()
 {
@@ -25,13 +31,19 @@ void hc05_init()
 	HAL_UART_Receive_IT(&huart2, &receivedBTData, 1);
 }
 
+/*
+ **********************************
+ **		  BT-MSG INTERRUPT	     **
+ **********************************
+*/
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == USART2)
 	{
-		if(receivedBTData == 'S' && !receivedStart_Flag)
+		if(receivedBTData == 'S' && !receivedStart_Flag_1D)
 		{
-			receivedStart_Flag = true;
+			receivedStart_Flag_1D = true;
 		}
 
 		HAL_UART_Receive_IT(&huart2, &receivedBTData, 1); //Re-enable the Interrupt

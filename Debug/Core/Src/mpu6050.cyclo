@@ -1,4 +1,3 @@
-../Core/Src/mpu6050.cpp:18:6:void mpu6050_init(bool)	8
-../Core/Src/mpu6050.cpp:111:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	6
-../Core/Src/mpu6050.cpp:139:6:void mpu6050_readData()	3
-../Core/Src/mpu6050.cpp:198:6:void HAL_GPIO_EXTI_Callback(uint16_t)	3
+../Core/Src/mpu6050.cpp:24:6:void mpu6050_init(bool)	8
+../Core/Src/mpu6050.cpp:122:6:void mpu6050_readData()	3
+../Core/Src/mpu6050.cpp:192:6:void HAL_GPIO_EXTI_Callback(uint16_t)	3

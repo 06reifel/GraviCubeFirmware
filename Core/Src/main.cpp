@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include "mpu6050.h"
 #include "hc05BT.h"
+#include "controlMotor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,7 +53,8 @@ DMA_HandleTypeDef hdma_tim3_ch1_trig;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-bool receivedStart_Flag = false;
+bool receivedStart_Flag_1D = false;
+bool balanceMode = oneDimensional;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,7 +117,10 @@ int main(void)
   //HC-05 Bluetooth Init
   hc05_init();
 
-  //Motor-Test
+  //Motor-Init
+  Motor Motor_3(&htim3, TIM_CHANNEL_1, GPIOB, GPIO_PIN_9, GPIO_PIN_5, GPIO_PIN_8);
+
+  /*
   TIM3->CCR1 = 50;
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 
@@ -123,7 +128,7 @@ int main(void)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //Start/Stop auf LOW
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET); //Brake auf HIGH damit gelöst
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_RESET); //Richtung des Motors
-
+  */
 
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET); //RGB-LED
 
@@ -146,7 +151,7 @@ int main(void)
 	static uint32_t timeSaveMotorTest = 0;
 	if(HAL_GetTick() - timeSaveMotorTest >= 10000)
 	{
-		uint32_t newDuty;
+		uint32_t newSpeed; // in
 		switch(PWMspeed)
 		{
 			case 0:
@@ -170,7 +175,7 @@ int main(void)
 		timeSaveMotorTest = HAL_GetTick();
 	}
 
-	if (receivedStart_Flag)
+	if (receivedStart_Flag_1D)
 	{
 	    static uint32_t timeSaveBuzzer = 0;
 	    static bool buzzerActive = false;
@@ -187,7 +192,8 @@ int main(void)
 	        printf("Start \n");
 	        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET); // Turn off buzzer
 	        buzzerActive = false;  // Reset buzzer state
-	        receivedStart_Flag = false; // Reset the Start Flag
+	        balanceMode = oneDimensional;
+	        receivedStart_Flag_1D = false; // Reset the Start Flag
 	    }
 	}
 

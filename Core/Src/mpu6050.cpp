@@ -15,6 +15,12 @@ extern I2C_HandleTypeDef hi2c1;
 extern TIM_HandleTypeDef htim4;
 uint8_t dataMPU[14];
 
+/*
+ **********************************
+ **		  IMU-INITIALIZATION	     **
+ **********************************
+*/
+
 void mpu6050_init(bool interruptEnable)
 {
 	//Check connection
@@ -35,6 +41,11 @@ void mpu6050_init(bool interruptEnable)
 	if(ret == HAL_OK)
 	{
 		printf("Exited sleep mode \n");
+		if (HAL_TIM_Base_Start_IT(&htim4) != HAL_OK)
+		{
+			// Starting Error
+			Error_Handler();
+		}
 	}
 	else
 	{
@@ -59,12 +70,6 @@ void mpu6050_init(bool interruptEnable)
 	{
 		printf("Couldn't set the digital Low Pass value \n");
 	}
-
-	if (HAL_TIM_Base_Start_IT(&htim4) != HAL_OK)
-	{
-		// Starting Error
-	    Error_Handler();
-	 }
 
 	//Interrupt-Enable
 	if(interruptEnable)
@@ -108,33 +113,11 @@ void mpu6050_init(bool interruptEnable)
 
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	static uint8_t interruptState = readData;
-    if (htim->Instance == TIM4)  // Check if the interrupt comes from TIM4
-    {
-        switch(interruptState)
-        {
-        	case readData:
-        		mpu6050_readData();
-        		interruptState++;
-        	break;
-
-        	case control_X_Axis:
-				interruptState++;
-			break;
-
-        	case control_Y_Axis:
-				interruptState++;
-			break;
-
-        	case control_Z_Axis:
-				interruptState = readData;
-			break;
-
-        }
-    }
-}
+/*
+ **********************************
+ **		  READ IMU-SENSOR	     **
+ **********************************
+*/
 
 void mpu6050_readData()
 {
@@ -144,8 +127,8 @@ void mpu6050_readData()
 
 		if(ret == HAL_OK)
 		{
-			double accX, accY, accZ, gyroX, gyroY, gyroZ, elapsedTime, accRoll, accPitch;
-			static double gyroAngleX = 0.0, gyroAngleY = 0.0, gyroYaw = 0.0;
+			double accX, accY, accZ, gyroX, gyroY, gyroZ, dt, accRoll, accPitch;
+			static double gyroAngleX = 0.0, gyroAngleY = 0.0, gyroYaw = 0.0, filterRoll = 0.0, filterPitch = 0.0;
 			static uint32_t currentTime, previousTime;
 
 			//Accelerometer Data (Registers 59 to 64)
@@ -162,34 +145,45 @@ void mpu6050_readData()
 			//Roll and Pitch Angles from Accelerometer
 			accPitch = atan2(-accX, sqrt(accY * accY + accZ * accZ)) * 57.2958; //* 57.2958 conversion from rad to deg (180°/PI)
 			//printf("Pitch: %f \n", accPitch);
-			/*works only if sensor is level (small pitch)
+
+			/*estimation that works only if sensor is level (small pitch angle)
 			accRoll = atan2(accY, accZ) * 57.3;
 			printf("Roll1: %f \n", accRoll);
 			*/
 			accRoll = atan2(accY, sqrt(accX * accX + accZ * accZ)) * 57.2958; //* 57.2958 conversion from rad to deg (180°/PI)
 			//printf("Roll: %f \n", accRoll);
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+
+
 			//Temperature Data (Registers 65 and 66)
 
 			//Gyroscope Data (Registers 67 to 72)
 			currentTime = HAL_GetTick();
-			elapsedTime = (currentTime - previousTime) / 1000.0; // divided by 1000 for conversion between milliseconds and seconds
+			dt = (currentTime - previousTime) / 1000.0; // divided by 1000 for conversion between milliseconds and seconds
+			previousTime = currentTime;
 
 			gyroX = ((int16_t)((dataMPU[GYRO_XOUT_H] << 8) | dataMPU[GYRO_XOUT_L]))/131.0;
-			printf("Gyro-X [°/s]: %f \n", gyroX);
+			//printf("Gyro-X [°/s]: %f \n", gyroX);
 
 			gyroY = ((int16_t)((dataMPU[GYRO_YOUT_H] << 8) | dataMPU[GYRO_YOUT_L]))/131.0;
-			printf("Gyro-Y [°/s]: %f \n", gyroY);
+			//printf("Gyro-Y [°/s]: %f \n", gyroY);
 
 			gyroZ = ((int16_t)((dataMPU[GYRO_ZOUT_H] << 8) | dataMPU[GYRO_ZOUT_L]))/131.0;
-			printf("Gyro-Z [°/s]: %f \n", gyroZ);
+			//printf("Gyro-Z [°/s]: %f \n", gyroZ);
 
 			//Angles and yaw from Gyroscope
-			gyroAngleX += gyroX * elapsedTime;
-			gyroAngleY += gyroY * elapsedTime;
-			gyroYaw += gyroZ * elapsedTime;
+			gyroAngleX += gyroX * dt;
+			gyroAngleY += gyroY * dt;
+			gyroYaw += gyroZ * dt;
 
-			previousTime = currentTime;
+			//Complementary Filter
+			filterRoll = GYRO_FILTER_WEIGHT * (filterRoll + gyroX * dt) + (1 - GYRO_FILTER_WEIGHT) * accRoll;
+			filterPitch = GYRO_FILTER_WEIGHT * (filterPitch + gyroY * dt) + (1 - GYRO_FILTER_WEIGHT) * accPitch;
+			/*
+			printf("Roll: %f \n", filterRoll);
+			printf("Pitch: %f \n", filterPitch);
+			printf("Yaw: %f \n", gyroYaw);
+			*/
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 		}
 	}
 }
