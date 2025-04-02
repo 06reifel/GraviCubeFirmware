@@ -13,6 +13,7 @@
 
 extern TIM_HandleTypeDef htim4;
 extern bool balanceMode;
+extern double gyroYaw, filterRoll, filterPitch;
 
 /*
  **********************************
@@ -49,15 +50,63 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
+Motor::Motor(TIM_HandleTypeDef *htim, unsigned int Channel, GPIO_TypeDef *motorPort, uint16_t directionPin, uint16_t enablePin, uint16_t brakePin)
+{
+	Motor::timer = htim;
+	Motor::timerChannel = Channel;
+	Motor::motorPort = motorPort;
+	Motor::directionPin = directionPin;
+	Motor::enablePin = enablePin;
+	Motor::brakePin = brakePin;
+
+	HAL_TIM_PWM_Start(timer, timerChannel);  // Start PWM
+
+	changeDirection(CCW);
+
+	changeBrakeState(enableBrake);
+
+	changeMotorState(disableMotor);
+
+}
+
+void Motor::changeSpeed(uint8_t newMotorSpeed)
+{
+	speed = newMotorSpeed;
+
+	uint32_t CCR_Value = (uint32_t)((__HAL_TIM_GET_AUTORELOAD(timer) + 1) * ((100.0 - speed) / 100.0));
+
+	__HAL_TIM_SET_COMPARE(timer, timerChannel, CCR_Value);
+}
+
+void Motor::changeDirection(bool newMotorDirection)
+{
+	direction = newMotorDirection;
+	HAL_GPIO_WritePin(motorPort, directionPin, (GPIO_PinState)direction);
+}
+
+void Motor::changeBrakeState(bool newBrakeState)
+{
+	brakeState = newBrakeState;
+	HAL_GPIO_WritePin(motorPort, brakePin, (GPIO_PinState)brakeState);
+}
+
+void Motor::changeMotorState(bool newMotorState)
+{
+	motorState = newMotorState;
+	HAL_GPIO_WritePin(motorPort, enablePin, (GPIO_PinState)motorState);
+}
+
 void controlRoll()
 {
+	double error;
 	switch(balanceMode)
 	{
 		case oneDimensional:
-			double error = 45 - filteredRoll;
+			error = 45 - filterRoll;
 		break;
 
 		case threeDimensional:
+			error = 45 - filterRoll;
 		break;
 	}
 }

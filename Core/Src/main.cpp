@@ -151,24 +151,24 @@ int main(void)
 	static uint32_t timeSaveMotorTest = 0;
 	if(HAL_GetTick() - timeSaveMotorTest >= 10000)
 	{
-		uint32_t newSpeed; // in
+		uint8_t newSpeed; // in %
 		switch(PWMspeed)
 		{
 			case 0:
-				newDuty = (htim3.Instance->ARR + 1) / 2; //50% Duty
-				htim3.Instance->CCR1 = newDuty;
+				newSpeed = 50;
+				Motor_3.changeSpeed(newSpeed);
 				PWMspeed++;
 			break;
 
 			case 1:
-				newDuty = (htim3.Instance->ARR + 1) / 4; //25% Duty => 75% Geschwindigkeit
-				htim3.Instance->CCR1 = newDuty;
+				newSpeed = 60;
+				Motor_3.changeSpeed(newSpeed);
 				PWMspeed++;
 			break;
 
 			case 2:
-				newDuty = ((htim3.Instance->ARR + 1) / 2) + ((htim3.Instance->ARR + 1) / 4); //75% Duty => 25% Geschwindigkeit
-				htim3.Instance->CCR1 = newDuty;
+				newSpeed = 25;
+				Motor_3.changeSpeed(newSpeed);
 				PWMspeed = 0;
 			break;
 		}
@@ -193,6 +193,8 @@ int main(void)
 	        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET); // Turn off buzzer
 	        buzzerActive = false;  // Reset buzzer state
 	        balanceMode = oneDimensional;
+	        Motor_3.changeMotorState(enableMotor);
+	        Motor_3.changeBrakeState(disableBrake);
 	        receivedStart_Flag_1D = false; // Reset the Start Flag
 	    }
 	}

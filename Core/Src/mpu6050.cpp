@@ -13,7 +13,9 @@
 
 extern I2C_HandleTypeDef hi2c1;
 extern TIM_HandleTypeDef htim4;
+
 uint8_t dataMPU[14];
+double gyroYaw = 0.0, filterRoll = 0.0, filterPitch = 0.0;
 
 /*
  **********************************
@@ -128,7 +130,7 @@ void mpu6050_readData()
 		if(ret == HAL_OK)
 		{
 			double accX, accY, accZ, gyroX, gyroY, gyroZ, dt, accRoll, accPitch;
-			static double gyroAngleX = 0.0, gyroAngleY = 0.0, gyroYaw = 0.0, filterRoll = 0.0, filterPitch = 0.0;
+			static double gyroAngleX = 0.0, gyroAngleY = 0.0;
 			static uint32_t currentTime, previousTime;
 
 			//Accelerometer Data (Registers 59 to 64)

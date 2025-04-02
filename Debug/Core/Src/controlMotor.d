@@ -1,5 +1,5 @@
 Core/Src/controlMotor.o: ../Core/Src/controlMotor.cpp \
- ../Core/Inc/controlMotor.h ../Core/Inc/mpu6050.h ../Core/Inc/main.h \
+ ../Core/Inc/controlMotor.h ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -32,9 +32,9 @@ Core/Src/controlMotor.o: ../Core/Src/controlMotor.cpp \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
+ ../Core/Inc/mpu6050.h ../Core/Inc/main.h
 ../Core/Inc/controlMotor.h:
-../Core/Inc/mpu6050.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -69,3 +69,5 @@ Core/Src/controlMotor.o: ../Core/Src/controlMotor.cpp \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
+../Core/Inc/mpu6050.h:
+../Core/Inc/main.h:
