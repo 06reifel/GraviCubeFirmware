@@ -20,6 +20,7 @@ enum interruptStates
 
 enum balanceModes
 {
+	idle,
 	oneDimensional,
 	threeDimensional
 };
@@ -46,10 +47,12 @@ enum motorStates
 class Motor
 {
 	public:
-		void changeSpeed(uint8_t);
+		void changeSpeed(double);
 		void changeDirection(bool);
 		void changeBrakeState(bool);
 		void changeMotorState(bool);
+		void testMotor();
+		bool getDirection();
 		Motor(TIM_HandleTypeDef *, unsigned int, GPIO_TypeDef *, uint16_t, uint16_t, uint16_t);
 
 	private:
@@ -60,7 +63,7 @@ class Motor
 		uint16_t enablePin;
 		uint16_t brakePin;
 
-		uint8_t speed; //in %
+		double speed; //in %
 		bool direction;
 		bool brakeState;
 		bool motorState;

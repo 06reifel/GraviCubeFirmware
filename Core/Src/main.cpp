@@ -54,7 +54,8 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 bool receivedStart_Flag_1D = false;
-bool balanceMode = oneDimensional;
+uint8_t balanceMode = idle;
+Motor Motor_3(&htim3, TIM_CHANNEL_1, GPIOB, GPIO_PIN_9, GPIO_PIN_5, GPIO_PIN_8);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -117,9 +118,6 @@ int main(void)
   //HC-05 Bluetooth Init
   hc05_init();
 
-  //Motor-Init
-  Motor Motor_3(&htim3, TIM_CHANNEL_1, GPIOB, GPIO_PIN_9, GPIO_PIN_5, GPIO_PIN_8);
-
   /*
   TIM3->CCR1 = 50;
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
@@ -147,33 +145,7 @@ int main(void)
 		timeSaveBlink = HAL_GetTick();
 	}
 
-	static uint8_t PWMspeed = 0;
-	static uint32_t timeSaveMotorTest = 0;
-	if(HAL_GetTick() - timeSaveMotorTest >= 10000)
-	{
-		uint8_t newSpeed; // in %
-		switch(PWMspeed)
-		{
-			case 0:
-				newSpeed = 50;
-				Motor_3.changeSpeed(newSpeed);
-				PWMspeed++;
-			break;
-
-			case 1:
-				newSpeed = 60;
-				Motor_3.changeSpeed(newSpeed);
-				PWMspeed++;
-			break;
-
-			case 2:
-				newSpeed = 25;
-				Motor_3.changeSpeed(newSpeed);
-				PWMspeed = 0;
-			break;
-		}
-		timeSaveMotorTest = HAL_GetTick();
-	}
+	//Motor_3.testMotor();
 
 	if (receivedStart_Flag_1D)
 	{
@@ -386,9 +358,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 8-1;
+  htim4.Init.Prescaler = 16-1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 10000-1;
+  htim4.Init.Period = 1000-1;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)

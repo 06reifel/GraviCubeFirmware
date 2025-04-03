@@ -180,11 +180,11 @@ void mpu6050_readData()
 			//Complementary Filter
 			filterRoll = GYRO_FILTER_WEIGHT * (filterRoll + gyroX * dt) + (1 - GYRO_FILTER_WEIGHT) * accRoll;
 			filterPitch = GYRO_FILTER_WEIGHT * (filterPitch + gyroY * dt) + (1 - GYRO_FILTER_WEIGHT) * accPitch;
-			/*
-			printf("Roll: %f \n", filterRoll);
-			printf("Pitch: %f \n", filterPitch);
-			printf("Yaw: %f \n", gyroYaw);
-			*/
+
+			//printf("Roll: %f \n", filterRoll);
+			//printf("Pitch: %f \n", filterPitch);
+			//printf("Yaw: %f \n", gyroYaw);
+
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 		}
 	}

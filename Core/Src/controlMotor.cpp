@@ -12,8 +12,7 @@
 #include "main.h"
 
 extern TIM_HandleTypeDef htim4;
-extern bool balanceMode;
-extern double gyroYaw, filterRoll, filterPitch;
+extern uint8_t balanceMode;
 
 /*
  **********************************
@@ -50,6 +49,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
+/*
+ **********************************
+ **		  MOTOR-CLASS-DEF	     **
+ **********************************
+*/
+
 Motor::Motor(TIM_HandleTypeDef *htim, unsigned int Channel, GPIO_TypeDef *motorPort, uint16_t directionPin, uint16_t enablePin, uint16_t brakePin)
 {
 	Motor::timer = htim;
@@ -69,7 +74,7 @@ Motor::Motor(TIM_HandleTypeDef *htim, unsigned int Channel, GPIO_TypeDef *motorP
 
 }
 
-void Motor::changeSpeed(uint8_t newMotorSpeed)
+void Motor::changeSpeed(double newMotorSpeed)
 {
 	speed = newMotorSpeed;
 
@@ -96,15 +101,98 @@ void Motor::changeMotorState(bool newMotorState)
 	HAL_GPIO_WritePin(motorPort, enablePin, (GPIO_PinState)motorState);
 }
 
+void Motor::testMotor()
+{
+	if(balanceMode != idle)
+	{
+		static uint8_t PWMspeed = 0;
+		static uint32_t timeSaveMotorTest = 0;
+		if(HAL_GetTick() - timeSaveMotorTest >= 10000)
+		{
+			uint8_t newSpeed; // in %
+			switch(PWMspeed)
+			{
+				case 0:
+					newSpeed = 50;
+					changeSpeed(newSpeed);
+					PWMspeed++;
+				break;
+
+				case 1:
+					newSpeed = 60;
+					changeSpeed(newSpeed);
+					PWMspeed++;
+				break;
+
+				case 2:
+					newSpeed = 25;
+					changeSpeed(newSpeed);
+					PWMspeed = 0;
+				break;
+			}
+			timeSaveMotorTest = HAL_GetTick();
+		}
+	}
+}
+
+bool Motor::getDirection()
+{
+	return direction;
+}
+
+/*
+ **********************************
+ **		    MOTOR-CONTROL	     **
+ **********************************
+*/
+extern Motor Motor_3;
+extern double gyroYaw, filterRoll, filterPitch;
+double Kp = 0.1;
+double Ki = 0.01;
+double Kd = 0.05;
+
 void controlRoll()
 {
-	double error;
+	double error, errorDerivative, output, absOutput, dt;
+	static uint32_t lastTime = 0;
+	static double previousError = 0, errorIntegral = 0;
+
 	switch(balanceMode)
 	{
 		case oneDimensional:
+		{
 			error = 45 - filterRoll;
-		break;
+			dt = (HAL_GetTick() - lastTime) / 1000.0;
+			errorIntegral += error * dt;
+			errorDerivative = (error - previousError) / dt;
+			previousError = error;
+			lastTime = HAL_GetTick();
+			output = Kp * error + Ki * errorIntegral + Kd * errorDerivative;
 
+			double absOutput = (output < 0) ? -output : output;
+
+			if(absOutput > 100)
+			{
+				absOutput = 100;
+			}
+
+			if(output > 0 && (Motor_3.getDirection() != CCW))
+			{
+				Motor_3.changeBrakeState(enableBrake);
+				Motor_3.changeDirection(CCW);
+				Motor_3.changeBrakeState(disableBrake);
+			}
+			else if(output < 0 && (Motor_3.getDirection() != CW))
+			{
+				Motor_3.changeBrakeState(enableBrake);
+				Motor_3.changeDirection(CW);
+				Motor_3.changeBrakeState(disableBrake);
+			}
+
+			Motor_3.changeSpeed(absOutput);
+
+		break;
+		}
 		case threeDimensional:
 			error = 45 - filterRoll;
 		break;

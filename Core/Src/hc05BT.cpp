@@ -36,6 +36,7 @@ void hc05_init()
  **		  BT-MSG INTERRUPT	     **
  **********************************
 */
+extern double Kp, Ki, Kd;
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -44,6 +45,33 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		if(receivedBTData == 'S' && !receivedStart_Flag_1D)
 		{
 			receivedStart_Flag_1D = true;
+		}
+
+		switch(receivedBTData)
+		{
+			case 'a':
+				Kp += 0.1;
+			break;
+
+			case 'b':
+				Kp += 0.1;
+			break;
+
+			case 'c':
+				Ki += 0.01;
+			break;
+
+			case 'd':
+				Ki -= 0.01;
+			break;
+
+			case 'e':
+				Kd += 0.01;
+			break;
+
+			case 'f':
+				Kd -= 0.01;
+			break;
 		}
 
 		HAL_UART_Receive_IT(&huart2, &receivedBTData, 1); //Re-enable the Interrupt
