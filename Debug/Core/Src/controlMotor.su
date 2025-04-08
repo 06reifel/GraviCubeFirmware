@@ -1,9 +1,10 @@
 ../Core/Src/controlMotor.cpp:23:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	16	static
 ../Core/Src/controlMotor.cpp:58:1:Motor::Motor(TIM_HandleTypeDef*, unsigned int, GPIO_TypeDef*, uint16_t, uint16_t, uint16_t)	24	static
-../Core/Src/controlMotor.cpp:77:6:void Motor::changeSpeed(double)	40	static
-../Core/Src/controlMotor.cpp:86:6:void Motor::changeDirection(bool)	16	static
-../Core/Src/controlMotor.cpp:92:6:void Motor::changeBrakeState(bool)	16	static
-../Core/Src/controlMotor.cpp:98:6:void Motor::changeMotorState(bool)	16	static
-../Core/Src/controlMotor.cpp:104:6:void Motor::testMotor()	24	static
-../Core/Src/controlMotor.cpp:138:6:bool Motor::getDirection()	16	static
-../Core/Src/controlMotor.cpp:155:6:void controlRoll()	64	static
+../Core/Src/controlMotor.cpp:78:6:void Motor::changeSpeed(double)	40	static
+../Core/Src/controlMotor.cpp:87:6:void Motor::changeDirection(bool)	16	static
+../Core/Src/controlMotor.cpp:93:6:void Motor::changeBrakeState(bool)	16	static
+../Core/Src/controlMotor.cpp:99:6:void Motor::changeMotorState(bool)	16	static
+../Core/Src/controlMotor.cpp:105:6:void Motor::testMotor()	24	static
+../Core/Src/controlMotor.cpp:136:6:bool Motor::getDirection()	16	static
+../Core/Src/controlMotor.cpp:141:8:double Motor::getSpeed()	16	static
+../Core/Src/controlMotor.cpp:158:6:void controlRoll()	64	static

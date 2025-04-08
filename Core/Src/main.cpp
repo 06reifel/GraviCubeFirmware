@@ -56,6 +56,13 @@ UART_HandleTypeDef huart2;
 bool receivedStart_Flag_1D = false;
 uint8_t balanceMode = idle;
 Motor Motor_3(&htim3, TIM_CHANNEL_1, GPIOB, GPIO_PIN_9, GPIO_PIN_5, GPIO_PIN_8);
+
+/*
+ **********************************
+ **		    TEST-SETTINGS	     **
+ **********************************
+*/
+const bool testMode = true;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -145,8 +152,6 @@ int main(void)
 		timeSaveBlink = HAL_GetTick();
 	}
 
-	//Motor_3.testMotor();
-
 	if (receivedStart_Flag_1D)
 	{
 	    static uint32_t timeSaveBuzzer = 0;
@@ -164,9 +169,19 @@ int main(void)
 	        printf("Start \n");
 	        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET); // Turn off buzzer
 	        buzzerActive = false;  // Reset buzzer state
-	        balanceMode = oneDimensional;
-	        Motor_3.changeMotorState(enableMotor);
-	        Motor_3.changeBrakeState(disableBrake);
+
+	        if (testMode)
+	        {
+	        	balanceMode = test;
+	        }
+	        else
+	        {
+	        	balanceMode = oneDimensional;
+	        }
+
+        	Motor_3.changeMotorState(enableMotor);
+        	Motor_3.changeBrakeState(disableBrake);
+
 	        receivedStart_Flag_1D = false; // Reset the Start Flag
 	    }
 	}

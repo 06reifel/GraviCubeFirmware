@@ -64,6 +64,8 @@ Motor::Motor(TIM_HandleTypeDef *htim, unsigned int Channel, GPIO_TypeDef *motorP
 	Motor::enablePin = enablePin;
 	Motor::brakePin = brakePin;
 
+	changeSpeed(MOTOR_BASE_SPEED);
+
 	HAL_TIM_PWM_Start(timer, timerChannel);  // Start PWM
 
 	changeDirection(CCW);
@@ -71,14 +73,13 @@ Motor::Motor(TIM_HandleTypeDef *htim, unsigned int Channel, GPIO_TypeDef *motorP
 	changeBrakeState(enableBrake);
 
 	changeMotorState(disableMotor);
-
 }
 
 void Motor::changeSpeed(double newMotorSpeed)
 {
 	speed = newMotorSpeed;
 
-	uint32_t CCR_Value = (uint32_t)((__HAL_TIM_GET_AUTORELOAD(timer) + 1) * ((100.0 - speed) / 100.0));
+	uint32_t CCR_Value = (uint32_t)((double)(__HAL_TIM_GET_AUTORELOAD(timer) + 1) * ((100.0 - speed) / 100.0));
 
 	__HAL_TIM_SET_COMPARE(timer, timerChannel, CCR_Value);
 }
@@ -103,41 +104,43 @@ void Motor::changeMotorState(bool newMotorState)
 
 void Motor::testMotor()
 {
-	if(balanceMode != idle)
+	static uint8_t PWMspeed = 0;
+	static uint32_t timeSaveMotorTest = 0;
+	if(HAL_GetTick() - timeSaveMotorTest >= 10000)
 	{
-		static uint8_t PWMspeed = 0;
-		static uint32_t timeSaveMotorTest = 0;
-		if(HAL_GetTick() - timeSaveMotorTest >= 10000)
+		uint8_t newSpeed; // in %
+		switch(PWMspeed)
 		{
-			uint8_t newSpeed; // in %
-			switch(PWMspeed)
-			{
-				case 0:
-					newSpeed = 50;
-					changeSpeed(newSpeed);
-					PWMspeed++;
-				break;
+			case 0:
+				newSpeed = 50;
+				changeSpeed(newSpeed);
+				PWMspeed++;
+			break;
 
-				case 1:
-					newSpeed = 60;
-					changeSpeed(newSpeed);
-					PWMspeed++;
-				break;
+			case 1:
+				newSpeed = 60;
+				changeSpeed(newSpeed);
+				PWMspeed++;
+			break;
 
-				case 2:
-					newSpeed = 25;
-					changeSpeed(newSpeed);
-					PWMspeed = 0;
-				break;
-			}
-			timeSaveMotorTest = HAL_GetTick();
+			case 2:
+				newSpeed = 25;
+				changeSpeed(newSpeed);
+				PWMspeed = 0;
+			break;
 		}
+		timeSaveMotorTest = HAL_GetTick();
 	}
 }
 
 bool Motor::getDirection()
 {
 	return direction;
+}
+
+double Motor::getSpeed()
+{
+	return speed;
 }
 
 /*
@@ -148,7 +151,7 @@ bool Motor::getDirection()
 extern Motor Motor_3;
 extern double gyroYaw, filterRoll, filterPitch;
 double Kp = /*160;*/ 0.001;
-double Ki = /*10.5;*/ 0.0001;
+double Ki = /*10.5;*/ 0.0;
 double Kd = /*0.03;*/ 0.03;
 double alpha = 0.74;
 
@@ -164,7 +167,7 @@ void controlRoll()
 		{
 			//PID
 
-			error = 46.5 /*47.3*/ - filterRoll;
+			error = 46.5 /*47.3*/ - filterRoll; //links = 0°, rechts = 90°
 			dt = (HAL_GetTick() - lastTime) / 1000.0;
 			errorIntegral += error * dt;
 			errorDerivative = (error - previousError) / dt;
@@ -172,6 +175,9 @@ void controlRoll()
 			lastTime = HAL_GetTick();
 			output = Kp * error + Ki * errorIntegral + Kd * errorDerivative;
 
+			//schneller = nach links, langsamer = nach rechts
+			if (output > 20) output = 20;
+			if (output < -20) output = -20;
 
 			//LQR
 			/*
@@ -181,32 +187,30 @@ void controlRoll()
 
 			absOutput = (output < 0) ? -output : output;
 
-			if(absOutput > 100)
-			{
-				absOutput = 100;
-			}
-
 			//motor_speed_X += absOutput;
 
-			if(output > 0 && (Motor_3.getDirection() != CCW))
+			if(output > 0)
 			{
+				//langsamer werden
 				Motor_3.changeBrakeState(enableBrake);
-				Motor_3.changeDirection(CCW);
+				Motor_3.changeSpeed((MOTOR_BASE_SPEED - absOutput));
 				Motor_3.changeBrakeState(disableBrake);
 			}
-			else if(output < 0 && (Motor_3.getDirection() != CW))
+			else if(output < 0)
 			{
-				Motor_3.changeBrakeState(enableBrake);
-				Motor_3.changeDirection(CW);
-				Motor_3.changeBrakeState(disableBrake);
+				//schneller werden
+				Motor_3.changeSpeed((MOTOR_BASE_SPEED + absOutput));
 			}
 
-			Motor_3.changeSpeed(absOutput);
 
 		break;
 		}
 		case threeDimensional:
 			error = 45 - filterRoll;
+		break;
+
+		case test:
+			Motor_3.testMotor();
 		break;
 	}
 }

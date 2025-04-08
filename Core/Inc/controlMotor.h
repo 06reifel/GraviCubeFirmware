@@ -10,6 +10,13 @@
 
 #include "main.h"
 
+/*
+ **********************************
+ **		  CONTROL-SETTINGS       **
+ **********************************
+*/
+#define MOTOR_BASE_SPEED 30.0
+
 enum interruptStates
 {
 	readData,
@@ -20,6 +27,7 @@ enum interruptStates
 
 enum balanceModes
 {
+	test,
 	idle,
 	oneDimensional,
 	threeDimensional
@@ -27,8 +35,8 @@ enum balanceModes
 
 enum motorDirections
 {
-	CCW,	//Low = Counter Clock Wise
-	CW		//High = Clock Wise
+	CCW,	//Low = Counter Clock Wise = right
+	CW		//High = Clock Wise = left
 };
 
 enum motorBrakeStates
@@ -44,6 +52,7 @@ enum motorStates
 	disableMotor	//High = disabled
 };
 
+
 class Motor
 {
 	public:
@@ -53,6 +62,7 @@ class Motor
 		void changeMotorState(bool);
 		void testMotor();
 		bool getDirection();
+		double getSpeed();
 		Motor(TIM_HandleTypeDef *, unsigned int, GPIO_TypeDef *, uint16_t, uint16_t, uint16_t);
 
 	private:
