@@ -50,27 +50,27 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		switch(receivedBTData)
 		{
 			case 'a':
-				Kp += 0.1;
+				Kp += 0.00001;
 			break;
 
 			case 'b':
-				Kp += 0.1;
+				Kp += 0.00001;
 			break;
 
 			case 'c':
-				Ki += 0.01;
+				Ki += 0.001;
 			break;
 
 			case 'd':
-				Ki -= 0.01;
+				Ki -= 0.001;
 			break;
 
 			case 'e':
-				Kd += 0.01;
+				Kd += 0.001;
 			break;
 
 			case 'f':
-				Kd -= 0.01;
+				Kd -= 0.001;
 			break;
 		}
 

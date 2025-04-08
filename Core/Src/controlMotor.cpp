@@ -147,21 +147,24 @@ bool Motor::getDirection()
 */
 extern Motor Motor_3;
 extern double gyroYaw, filterRoll, filterPitch;
-double Kp = 0.1;
-double Ki = 0.01;
-double Kd = 0.05;
+double Kp = /*160;*/ 0.001;
+double Ki = /*10.5;*/ 0.0001;
+double Kd = /*0.03;*/ 0.03;
+double alpha = 0.74;
 
 void controlRoll()
 {
-	double error, errorDerivative, output, absOutput, dt;
+	double error, errorDerivative, output, absOutput, dt, filterYaw;
 	static uint32_t lastTime = 0;
-	static double previousError = 0, errorIntegral = 0;
+	static double previousError = 0, errorIntegral = 0, motor_speed_X = 0;
 
 	switch(balanceMode)
 	{
 		case oneDimensional:
 		{
-			error = 45 - filterRoll;
+			//PID
+
+			error = 46.5 /*47.3*/ - filterRoll;
 			dt = (HAL_GetTick() - lastTime) / 1000.0;
 			errorIntegral += error * dt;
 			errorDerivative = (error - previousError) / dt;
@@ -169,12 +172,21 @@ void controlRoll()
 			lastTime = HAL_GetTick();
 			output = Kp * error + Ki * errorIntegral + Kd * errorDerivative;
 
-			double absOutput = (output < 0) ? -output : output;
+
+			//LQR
+			/*
+			filterYaw = alpha * gyroYaw + (1 - alpha) * filterYaw;
+			output = Kp * filterRoll + Ki * filterYaw + Kd * motor_speed_X;
+			*/
+
+			absOutput = (output < 0) ? -output : output;
 
 			if(absOutput > 100)
 			{
 				absOutput = 100;
 			}
+
+			//motor_speed_X += absOutput;
 
 			if(output > 0 && (Motor_3.getDirection() != CCW))
 			{

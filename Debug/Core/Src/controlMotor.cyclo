@@ -6,4 +6,4 @@
 ../Core/Src/controlMotor.cpp:98:6:void Motor::changeMotorState(bool)	1
 ../Core/Src/controlMotor.cpp:104:6:void Motor::testMotor()	7
 ../Core/Src/controlMotor.cpp:138:6:bool Motor::getDirection()	1
-../Core/Src/controlMotor.cpp:154:6:void controlRoll()	11
+../Core/Src/controlMotor.cpp:155:6:void controlRoll()	11
