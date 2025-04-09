@@ -148,7 +148,7 @@ double Motor::getSpeed()
  **		    MOTOR-CONTROL	     **
  **********************************
 */
-extern Motor Motor_3;
+extern Motor* Motor_3;
 extern double gyroYaw, filterRoll, filterPitch;
 double Kp = /*160;*/ 0.001;
 double Ki = /*10.5;*/ 0.0;
@@ -192,14 +192,14 @@ void controlRoll()
 			if(output > 0)
 			{
 				//langsamer werden
-				Motor_3.changeBrakeState(enableBrake);
-				Motor_3.changeSpeed((MOTOR_BASE_SPEED - absOutput));
-				Motor_3.changeBrakeState(disableBrake);
+				Motor_3->changeBrakeState(enableBrake);
+				Motor_3->changeSpeed((MOTOR_BASE_SPEED - absOutput));
+				Motor_3->changeBrakeState(disableBrake);
 			}
 			else if(output < 0)
 			{
 				//schneller werden
-				Motor_3.changeSpeed((MOTOR_BASE_SPEED + absOutput));
+				Motor_3->changeSpeed((MOTOR_BASE_SPEED + absOutput));
 			}
 
 
@@ -210,7 +210,7 @@ void controlRoll()
 		break;
 
 		case test:
-			Motor_3.testMotor();
+			Motor_3->testMotor();
 		break;
 	}
 }

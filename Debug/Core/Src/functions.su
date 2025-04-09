@@ -1,0 +1,2 @@
+../Core/Src/functions.cpp:13:6:void blinkLED(uint32_t)	16	static
+../Core/Src/functions.cpp:23:7:float readBatteryVoltage()	24	static

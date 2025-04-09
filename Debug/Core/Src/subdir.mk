@@ -6,6 +6,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../Core/Src/controlMotor.cpp \
+../Core/Src/functions.cpp \
 ../Core/Src/hc05BT.cpp \
 ../Core/Src/main.cpp \
 ../Core/Src/mpu6050.cpp 
@@ -26,6 +27,7 @@ C_DEPS += \
 
 OBJS += \
 ./Core/Src/controlMotor.o \
+./Core/Src/functions.o \
 ./Core/Src/hc05BT.o \
 ./Core/Src/main.o \
 ./Core/Src/mpu6050.o \
@@ -37,6 +39,7 @@ OBJS += \
 
 CPP_DEPS += \
 ./Core/Src/controlMotor.d \
+./Core/Src/functions.d \
 ./Core/Src/hc05BT.d \
 ./Core/Src/main.d \
 ./Core/Src/mpu6050.d 
@@ -51,7 +54,7 @@ Core/Src/%.o Core/Src/%.su Core/Src/%.cyclo: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/controlMotor.cyclo ./Core/Src/controlMotor.d ./Core/Src/controlMotor.o ./Core/Src/controlMotor.su ./Core/Src/hc05BT.cyclo ./Core/Src/hc05BT.d ./Core/Src/hc05BT.o ./Core/Src/hc05BT.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/mpu6050.cyclo ./Core/Src/mpu6050.d ./Core/Src/mpu6050.o ./Core/Src/mpu6050.su ./Core/Src/stm32f4xx_hal_msp.cyclo ./Core/Src/stm32f4xx_hal_msp.d ./Core/Src/stm32f4xx_hal_msp.o ./Core/Src/stm32f4xx_hal_msp.su ./Core/Src/stm32f4xx_it.cyclo ./Core/Src/stm32f4xx_it.d ./Core/Src/stm32f4xx_it.o ./Core/Src/stm32f4xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32f4xx.cyclo ./Core/Src/system_stm32f4xx.d ./Core/Src/system_stm32f4xx.o ./Core/Src/system_stm32f4xx.su
+	-$(RM) ./Core/Src/controlMotor.cyclo ./Core/Src/controlMotor.d ./Core/Src/controlMotor.o ./Core/Src/controlMotor.su ./Core/Src/functions.cyclo ./Core/Src/functions.d ./Core/Src/functions.o ./Core/Src/functions.su ./Core/Src/hc05BT.cyclo ./Core/Src/hc05BT.d ./Core/Src/hc05BT.o ./Core/Src/hc05BT.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/mpu6050.cyclo ./Core/Src/mpu6050.d ./Core/Src/mpu6050.o ./Core/Src/mpu6050.su ./Core/Src/stm32f4xx_hal_msp.cyclo ./Core/Src/stm32f4xx_hal_msp.d ./Core/Src/stm32f4xx_hal_msp.o ./Core/Src/stm32f4xx_hal_msp.su ./Core/Src/stm32f4xx_it.cyclo ./Core/Src/stm32f4xx_it.d ./Core/Src/stm32f4xx_it.o ./Core/Src/stm32f4xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32f4xx.cyclo ./Core/Src/system_stm32f4xx.d ./Core/Src/system_stm32f4xx.o ./Core/Src/system_stm32f4xx.su
 
 .PHONY: clean-Core-2f-Src
 
