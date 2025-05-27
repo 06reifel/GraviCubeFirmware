@@ -64,7 +64,7 @@ Motor* Motor_3 = nullptr;
  **		    TEST-SETTINGS	     **
  **********************************
 */
-const bool testMode = true;
+const bool testMode = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -154,20 +154,49 @@ int main(void)
 
 	float batteryVoltage = readBatteryVoltage();
 
-	if(batteryVoltage < 10.5)
+	static bool beepState = false;
+	static bool startState = false;
+	if(batteryVoltage < 10.0)
 	{
-		static uint32_t timeSaveBeep = HAL_GetTick();
-		if (HAL_GetTick() - timeSaveBeep >= 200)
+		static uint32_t timeStart = HAL_GetTick();
+		if(!startState)
+		{
+			timeStart = HAL_GetTick();
+			startState = true;
+		}
+
+		if(HAL_GetTick() - timeStart >= 2000 && startState)
+		{
+			timeStart = HAL_GetTick();
+			beepState = true;
+			printf("%f \n", batteryVoltage);
+		}
+	}
+	else
+	{
+		beepState = false;
+		startState = false;
+	}
+
+	static bool buzzerActive = false;
+
+	static uint32_t timeSaveBeep = HAL_GetTick();
+	if (beepState)
+	{
+		if(HAL_GetTick() - timeSaveBeep >= 200)
 		{
 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_2);
 			timeSaveBeep = HAL_GetTick();
 		}
 	}
+	else if(!buzzerActive)
+	{
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
+	}
 
-	if (receivedStart_Flag_1D)
+	if (receivedStart_Flag_1D && balanceMode == idle)
 	{
 	    static uint32_t timeSaveBuzzer = 0;
-	    static bool buzzerActive = false;
 
 	    if (!buzzerActive)  // If the buzzer is not already on, start it
 	    {

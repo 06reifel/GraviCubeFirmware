@@ -150,9 +150,9 @@ double Motor::getSpeed()
 */
 extern Motor* Motor_3;
 extern double gyroYaw, filterRoll, filterPitch;
-double Kp = /*160;*/ 0.001;
+double Kp = /*160;*/ 100;
 double Ki = /*10.5;*/ 0.0;
-double Kd = /*0.03;*/ 0.03;
+double Kd = /*0.03;*/ 50;
 double alpha = 0.74;
 
 void controlRoll()
@@ -166,8 +166,7 @@ void controlRoll()
 		case oneDimensional:
 		{
 			//PID
-
-			error = 46.5 /*47.3*/ - filterRoll; //links = 0°, rechts = 90°
+			error = 46.5 /*47.3*/ - filterRoll; //links = 90°, rechts = 0° => links negativer Fehler
 			dt = (HAL_GetTick() - lastTime) / 1000.0;
 			errorIntegral += error * dt;
 			errorDerivative = (error - previousError) / dt;
@@ -175,9 +174,10 @@ void controlRoll()
 			lastTime = HAL_GetTick();
 			output = Kp * error + Ki * errorIntegral + Kd * errorDerivative;
 
+			//Schwungscheibe dreht nach rechts
 			//schneller = nach links, langsamer = nach rechts
-			if (output > 20) output = 20;
-			if (output < -20) output = -20;
+			if (output > 40) output = 40;
+			if (output < -40) output = -40;
 
 			//LQR
 			/*
@@ -201,7 +201,6 @@ void controlRoll()
 				//schneller werden
 				Motor_3->changeSpeed((MOTOR_BASE_SPEED + absOutput));
 			}
-
 
 		break;
 		}

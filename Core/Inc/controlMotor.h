@@ -15,7 +15,7 @@
  **		  CONTROL-SETTINGS       **
  **********************************
 */
-#define MOTOR_BASE_SPEED 30.0
+#define MOTOR_BASE_SPEED 50.0
 
 enum interruptStates
 {
