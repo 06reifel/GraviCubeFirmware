@@ -15,7 +15,7 @@ extern I2C_HandleTypeDef hi2c1;
 extern TIM_HandleTypeDef htim4;
 
 uint8_t dataMPU[14];
-double gyroYaw = 0.0, filterRoll = 0.0, filterPitch = 0.0;
+double gyroYaw = 0.0, gyroX, filterRoll = 0.0, filterPitch = 0.0;
 
 /*
  **********************************
@@ -129,7 +129,7 @@ void mpu6050_readData()
 
 		if(ret == HAL_OK)
 		{
-			double accX, accY, accZ, gyroX, gyroY, gyroZ, dt, accRoll, accPitch;
+			double accX, accY, accZ, gyroY, gyroZ, dt, accRoll, accPitch;
 			static double gyroAngleX = 0.0, gyroAngleY = 0.0;
 			static uint32_t currentTime, previousTime;
 
@@ -181,7 +181,7 @@ void mpu6050_readData()
 			filterRoll = GYRO_FILTER_WEIGHT * (filterRoll + gyroX * dt) + (1 - GYRO_FILTER_WEIGHT) * accRoll;
 			filterPitch = GYRO_FILTER_WEIGHT * (filterPitch + gyroY * dt) + (1 - GYRO_FILTER_WEIGHT) * accPitch;
 
-			printf("Roll: %f \n", filterRoll);
+			//printf("Roll: %f \n", filterRoll);
 			//printf("Pitch: %f \n", filterPitch);
 			//printf("Yaw: %f \n", gyroYaw);
 

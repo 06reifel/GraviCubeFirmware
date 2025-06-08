@@ -16,6 +16,12 @@
  **********************************
 */
 #define MOTOR_BASE_SPEED 50.0
+#define BRAKE_THRESHOLD 8.0
+
+//Limitations
+#define MAX_PWM_CHANGE_RATE 40  // Max change per cycle
+#define MOTOR_MAX_SPEED 85 // Max speed in %
+#define MOTOR_MIN_SPEED 15 // Min speed in %
 
 enum interruptStates
 {

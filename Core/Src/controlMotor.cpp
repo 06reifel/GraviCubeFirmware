@@ -149,58 +149,87 @@ double Motor::getSpeed()
  **********************************
 */
 extern Motor* Motor_3;
-extern double gyroYaw, filterRoll, filterPitch;
-double Kp = /*160;*/ 100;
-double Ki = /*10.5;*/ 0.0;
-double Kd = /*0.03;*/ 50;
-double alpha = 0.74;
+extern double gyroYaw, gyroX, filterRoll, filterPitch;
+
+//Control-Parameters
+double Kp = 25;
+double Ki = 0.0;
+double Kd = 2.0;
+double alpha = 0.8;
 
 void controlRoll()
 {
-	double error, errorDerivative, output, absOutput, dt, filterYaw;
+	double error, output, dt;
 	static uint32_t lastTime = 0;
-	static double previousError = 0, errorIntegral = 0, motor_speed_X = 0;
+	static double errorIntegral = 0, previousOutput = 0, filteredGyroX = 0;
 
 	switch(balanceMode)
 	{
 		case oneDimensional:
 		{
 			//PID
-			error = 46.5 /*47.3*/ - filterRoll; //links = 90°, rechts = 0° => links negativer Fehler
-			dt = (HAL_GetTick() - lastTime) / 1000.0;
+			uint32_t currentTime = HAL_GetTick();
+			if (lastTime == 0)
+			{
+				lastTime = currentTime;
+				return; // Skip first iteration
+			}
+
+			dt = (currentTime - lastTime) / 1000.0;
+			lastTime = currentTime;
+
+			// Skip if dt is too large (system was paused)
+			if (dt > 0.1)
+			{
+			    errorIntegral = 0;
+			    return;
+			}
+
+			error = 46.3 - filterRoll; //links = 90°, rechts = 0° => links negativer Fehler
+
+			//deadband to reduce noise
+			if (gyroX > -0.5 && gyroX < 0.5) {
+			    gyroX = 0;
+			}
+
+			filteredGyroX = alpha * gyroX + (1 - alpha) * filteredGyroX;
+
 			errorIntegral += error * dt;
-			errorDerivative = (error - previousError) / dt;
-			previousError = error;
-			lastTime = HAL_GetTick();
-			output = Kp * error + Ki * errorIntegral + Kd * errorDerivative;
 
-			//Schwungscheibe dreht nach rechts
-			//schneller = nach links, langsamer = nach rechts
-			if (output > 40) output = 40;
-			if (output < -40) output = -40;
+			// Integral windup protection
+			if (errorIntegral > 50) errorIntegral = 50;
+			if (errorIntegral < -50) errorIntegral = -50;
 
-			//LQR
-			/*
-			filterYaw = alpha * gyroYaw + (1 - alpha) * filterYaw;
-			output = Kp * filterRoll + Ki * filterYaw + Kd * motor_speed_X;
-			*/
+			output = Kp * error + Ki * errorIntegral - Kd * filteredGyroX;
 
-			absOutput = (output < 0) ? -output : output;
-
-			//motor_speed_X += absOutput;
-
-			if(output > 0)
+			// Rate limiting for smooth transitions
+			double outputChange = output - previousOutput;
+			if (outputChange > MAX_PWM_CHANGE_RATE)
 			{
-				//langsamer werden
-				Motor_3->changeBrakeState(enableBrake);
-				Motor_3->changeSpeed((MOTOR_BASE_SPEED - absOutput));
-				Motor_3->changeBrakeState(disableBrake);
+				output = previousOutput + MAX_PWM_CHANGE_RATE;
 			}
-			else if(output < 0)
+			else if (outputChange < -MAX_PWM_CHANGE_RATE)
 			{
-				//schneller werden
-				Motor_3->changeSpeed((MOTOR_BASE_SPEED + absOutput));
+				output = previousOutput - MAX_PWM_CHANGE_RATE;
 			}
+
+			previousOutput = output;
+
+			double targetSpeed = MOTOR_BASE_SPEED + output;
+
+			//The reaction wheel is spinning to the right
+			//faster speed = correction to the left
+			//slower speed = correction to the right
+
+			if (targetSpeed > MOTOR_MAX_SPEED) targetSpeed = MOTOR_MAX_SPEED;
+			if (targetSpeed < MOTOR_MIN_SPEED) targetSpeed = MOTOR_MIN_SPEED;
+
+	        uint32_t brakeCurrentTime = HAL_GetTick();  // Separate timing for brake
+
+	        // Check if strong braking (slowing down significantly)
+	        bool needsBraking = (output > BRAKE_THRESHOLD && targetSpeed < MOTOR_BASE_SPEED);
+
+			Motor_3->changeSpeed(targetSpeed);
 
 		break;
 		}
