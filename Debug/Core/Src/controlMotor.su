@@ -7,4 +7,4 @@
 ../Core/Src/controlMotor.cpp:105:6:void Motor::testMotor()	24	static
 ../Core/Src/controlMotor.cpp:136:6:bool Motor::getDirection()	16	static
 ../Core/Src/controlMotor.cpp:141:8:double Motor::getSpeed()	16	static
-../Core/Src/controlMotor.cpp:160:6:void controlRoll()	64	static
+../Core/Src/controlMotor.cpp:160:6:void controlRoll()	72	static

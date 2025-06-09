@@ -1,0 +1,12 @@
+../Drivers/CMSIS/Include/core_cm4.h:2064:26:uint32_t ITM_SendChar(uint32_t)	5
+../Core/Src/main.cpp:92:5:int main()	19
+../Core/Src/main.cpp:264:6:void SystemClock_Config()	3
+../Core/Src/main.cpp:310:13:void MX_ADC1_Init()	3
+../Core/Src/main.cpp:362:13:void MX_I2C1_Init()	2
+../Core/Src/main.cpp:396:13:void MX_TIM3_Init()	6
+../Core/Src/main.cpp:455:13:void MX_TIM4_Init()	4
+../Core/Src/main.cpp:500:13:void MX_USART2_UART_Init()	2
+../Core/Src/main.cpp:531:13:void MX_DMA_Init()	1
+../Core/Src/main.cpp:549:13:void MX_GPIO_Init()	1
+../Core/Src/main.cpp:605:6:int _write(int, char*, int)	2
+../Core/Src/main.cpp:624:6:void Error_Handler()	1

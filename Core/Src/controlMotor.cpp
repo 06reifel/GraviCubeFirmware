@@ -229,7 +229,37 @@ void controlRoll()
 	        // Check if strong braking (slowing down significantly)
 	        bool needsBraking = (output > BRAKE_THRESHOLD && targetSpeed < MOTOR_BASE_SPEED);
 
-			Motor_3->changeSpeed(targetSpeed);
+	        static bool brakingActive = false;
+	        static uint32_t brakeStartTime = 0;
+
+            if (needsBraking)
+            {
+            	if (!brakingActive)
+            	{
+            		// Start braking sequence
+            		Motor_3->changeBrakeState(enableBrake);
+            		Motor_3->changeSpeed(targetSpeed);
+            		brakeStartTime = brakeCurrentTime;
+            		brakingActive = true;
+            	}
+            	else
+            	{
+                    // Check if brake duration is complete
+                    if ((brakeCurrentTime - brakeStartTime) >= BRAKE_DURATION_MS) {
+                        // Release brake and continue with normal speed control
+                        Motor_3->changeBrakeState(disableBrake);
+                        brakingActive = false;
+                    }
+                    // Keep brake active and maintain reduced speed
+                    Motor_3->changeSpeed(targetSpeed);
+            	}
+            }
+            else
+            {
+                // Normal operation - no braking needed
+                Motor_3->changeBrakeState(disableBrake);
+                Motor_3->changeSpeed(targetSpeed);
+            }
 
 		break;
 		}
